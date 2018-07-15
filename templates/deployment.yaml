@@ -1,0 +1,91 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "stress-helm-chart.fullname" . }}
+  labels:
+    app: {{ template "stress-helm-chart.name" . }}
+    chart: {{ template "stress-helm-chart.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "stress-helm-chart.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "stress-helm-chart.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "progrium/stress"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: 
+            - "stress"
+            {{- if .Values.stress.verbose }}
+            - "--verbose"
+            {{- end }}
+            {{- if .Values.stress.timeout }}
+            - --timeout
+            - {{ .Values.stress.timeout | quote }}
+            {{- end }}
+            {{- if .Values.stress.backoff }}
+            - --backoff
+            - {{ .Values.stress.backoff | quote }}
+            {{- end }}
+            {{- if .Values.stress.cpu }}
+            - --cpu
+            - {{ .Values.stress.cpu | quote }}
+            {{- end }}
+            {{- if .Values.stress.io }}
+            - --io
+            - {{ .Values.stress.io | quote }}
+            {{- end }}
+            {{- if .Values.stress.vm }}
+            - --vm
+            - {{ .Values.stress.vm | quote }}
+            {{- end }}
+            {{- if .Values.stress.vmBytes }}
+            - --vm-bytes
+            - {{ .Values.stress.vmBytes | quote }}
+            {{- end }}
+            {{- if .Values.stress.vmStride }}
+            - --vm-stride
+            - {{ .Values.stress.vmStride | quote }}
+            {{- end }}
+            {{- if .Values.stress.vmHang }}
+            - --vm-hang
+            - {{ .Values.stress.vmHang | quote }}
+            {{- end }}
+            {{- if .Values.stress.vmKeep }}
+            - --vm-keep
+            {{- end }}
+            {{- if .Values.stress.hdd }}
+            - --hdd
+            - {{ .Values.stress.hdd | quote }}
+            {{- end }}
+            {{- if .Values.stress.hddBytes }}
+            - --hdd-bytes
+            - {{ .Values.stress.hddBytes | quote }}
+            {{- end }}
+            {{- if .Values.stress.hddNoclean }}
+            - --hdd-noclean
+            - {{ .Values.stress.hddNoclean | quote }}
+            {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
